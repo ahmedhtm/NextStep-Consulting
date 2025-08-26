@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NEXTSTEP HR — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 grid place-items-center p-6">
+  <div id="loginBox" class="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-6 shadow">
+    <h1 class="text-xl font-bold">Admin Login</h1>
+    <form id="loginForm" class="mt-4 grid gap-3">
+      <input id="pass" type="password" placeholder="Password" class="rounded-xl border border-slate-300 px-3 py-2">
+      <button class="rounded-xl bg-slate-900 text-white px-4 py-2 font-semibold">Login</button>
+      <p id="error" class="hidden text-sm text-red-600">Wrong password.</p>
+    </form>
+    <p class="text-xs text-slate-500 mt-3">Default password: <b>NEXTSTEP2025</b> — يمكنك تغييره داخل هذا الملف.</p>
+  </div>
+
+  <div id="panel" class="hidden w-full max-w-3xl">
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold">Dashboard</h2>
+        <button id="logout" class="text-sm underline">Logout</button>
+      </div>
+      <form id="jobForm" class="mt-4 grid md:grid-cols-2 gap-3">
+        <input id="title" placeholder="Job title" class="rounded-xl border border-slate-300 px-3 py-2">
+        <input id="location" placeholder="Location" class="rounded-xl border border-slate-300 px-3 py-2">
+        <input id="salary" placeholder="Salary/Commission" class="rounded-xl border border-slate-300 px-3 py-2 md:col-span-2">
+        <textarea id="details" rows="3" placeholder="Details..." class="rounded-xl border border-slate-300 px-3 py-2 md:col-span-2"></textarea>
+        <button class="rounded-xl bg-slate-900 text-white px-4 py-2 font-semibold md:col-span-2">Save</button>
+      </form>
+      <div id="list" class="mt-6 grid gap-3"></div>
+    </div>
+  </div>
+
+<script>
+  const PASSWORD = "NEXTSTEP2025";
+  const loginForm = document.getElementById('loginForm');
+  const passInput = document.getElementById('pass');
+  const error = document.getElementById('error');
+  const loginBox = document.getElementById('loginBox');
+  const panel = document.getElementById('panel');
+  const logoutBtn = document.getElementById('logout');
+  const jobForm = document.getElementById('jobForm');
+  const list = document.getElementById('list');
+
+  function render(){
+    list.innerHTML = '';
+    const items = JSON.parse(localStorage.getItem('jobs') || '[]');
+    items.forEach((it,idx)=>{
+      const card = document.createElement('div');
+      card.className = 'border border-slate-200 rounded-xl p-3 bg-white';
+      card.innerHTML = '<div class="font-semibold">'+it.title+'</div>' +
+                       '<div class="text-sm text-slate-600">'+it.location+' · '+it.salary+'</div>'+
+                       '<p class="text-sm mt-2">'+it.details+'</p>'+
+                       '<button data-i="'+idx+'" class="mt-2 text-xs underline text-red-600">Delete</button>';
+      list.appendChild(card);
+    });
+  }
+
+  if(localStorage.getItem('auth')==='true'){ loginBox.classList.add('hidden'); panel.classList.remove('hidden'); render(); }
+
+  loginForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if(passInput.value === PASSWORD){
+      localStorage.setItem('auth','true');
+      loginBox.classList.add('hidden'); panel.classList.remove('hidden'); render();
+    } else { error.classList.remove('hidden'); }
+  });
+
+  logoutBtn?.addEventListener('click', ()=>{
+    localStorage.removeItem('auth'); location.reload();
+  });
+
+  jobForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const it = {
+      title: document.getElementById('title').value,
+      location: document.getElementById('location').value,
+      salary: document.getElementById('salary').value,
+      details: document.getElementById('details').value
+    };
+    const items = JSON.parse(localStorage.getItem('jobs') || '[]');
+    items.push(it);
+    localStorage.setItem('jobs', JSON.stringify(items));
+    jobForm.reset(); render();
+  });
+
+  list.addEventListener('click', (e)=>{
+    if(e.target.matches('button[data-i]')){
+      const idx = +e.target.getAttribute('data-i');
+      const items = JSON.parse(localStorage.getItem('jobs') || '[]');
+      items.splice(idx,1);
+      localStorage.setItem('jobs', JSON.stringify(items));
+      render();
+    }
+  });
+</script>
+</body>
+</html>
+Add admin.html (simple login dashboard)
